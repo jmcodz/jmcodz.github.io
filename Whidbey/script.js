@@ -236,6 +236,13 @@ async function loadWeather(){
   }
 }
 
+const toggleBtn = document.getElementById('toggleTides');
+const tideContainer = document.getElementById('tideContainer');
+
+toggleBtn.addEventListener('click', () => {
+  tideContainer.classList.toggle('hidden');
+
+
 // --- Wire up events ---
 refreshBtn?.addEventListener('click', loadData);
 window.addEventListener('DOMContentLoaded', () => {
