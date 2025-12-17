@@ -1,4 +1,3 @@
-
 // South Whidbey Island tides using NOAA CO-OPS Data API
 // Station 9447856 — Sandy Point, Saratoga Passage
 // Docs: https://api.tidesandcurrents.noaa.gov/api/prod/ (predictions, intervals)
@@ -247,6 +246,7 @@ const tideContainer = document.getElementById('tideContainer');
 
 toggleBtn.addEventListener('click', () => {
   tideContainer.classList.toggle('hidden');
+});
 
 
 // --- Wire up events ---
