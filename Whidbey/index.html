@@ -1,1 +1,71 @@
-Hello
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>South Whidbey Island Tides — Last 7 Days & Next 7 Days</title>
+  <meta name="description" content="Interactive tide predictions for Sandy Point (South Whidbey Island), WA — last 7 days and next 7 days." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header>
+    <h1>South Whidbey Island Tides</h1>
+    <p class="sub">Sandy Point, Saratoga Passage (NOAA Station <code>9447856</code>)</p>
+  </header>
+
+  <section class="controls">
+    <label>
+      Datum:
+      <select id="datum">
+        <option value="MLLW" selected>MLLW (chart datum)</option>
+        <option value="MSL">MSL</option>
+        <option value="MHHW">MHHW</option>
+      </select>
+    </label>
+    <label>
+      Units:
+      <select id="units">
+        <option value="english" selected>Feet</option>
+        <option value="metric">Meters</option>
+      </select>
+    </label>
+    <button id="refresh">Refresh</button>
+  </section>
+
+  <section class="chart">
+    <canvas id="tideChart" aria-label="Tide levels chart" role="img"></canvas>
+  </section>
+
+  <section class="table">
+    <h2>High/Low Tides</h2>
+    <p id="hiloNote"></p>
+    <table id="hiloTable" aria-label="High and low tide times and heights">
+      <thead>
+        <tr>
+          <th>Date (Local)</th>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Height</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p>
+      Data source: NOAA CO-OPS Tides & Currents. Predictions are harmonic and not for navigation.
+      Use caution; actual water levels can vary due to weather and other effects.
+    </p>
+    <p>
+      Station: Sandy Point, Saratoga Passage (South Whidbey). Built by Jeremy’s Copilot.
+    </p>
+  </footer>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="./script.js"></script>
+</body>
+</
