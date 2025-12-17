@@ -62,10 +62,9 @@ function last7Next7(){
   return {begin, end};
 }
 
-function toLocalISO(s){
-  // NOAA returns times in local time when using lst_ldt
-  const dt = new Date(s.replace(' ', 'T'));
-  return dt;
+function toLocalDate(s){
+  // NOAA returns times in local time when using lst_ldt (we still parse to Date)
+  return new Date(s.replace(' ', 'T'));
 }
 
 function setHiloNote(supportsHourly){
@@ -81,22 +80,36 @@ async function loadData(){
   const units = unitsSel.value;
 
   // Try hourly predictions first. Some subordinate stations only support hilo.
-let hourly = [];
-let supportsHourly = true;
-try {
-  const urlHourly = buildUrl({begin, end, product: 'predictions', interval: '60', datum, units});
-  const res = await fetchJSON(urlHourly);
-  hourly = Array.isArray(res.predictions) ? res  hourly = Array.isArray(res.predictions) ? res.predictions : [];
-  if (!hourly.length) supportsHourly = false;
-} catch (e) {
-  supportsHourly = false;
-
+  let hourly = [];
+  let supportsHourly = true;
+  try {
+    const urlHourly = buildUrl({
+      begin,
+      end,
+      product: 'predictions',
+      interval: '60',
+      datum,
+      units
+    });
+    const res = await fetchJSON(urlHourly);
+    hourly = Array.isArray(res.predictions) ? res.predictions : [];
+    if (!hourly.length) supportsHourly = false;
+  } catch (e) {
+    console.warn('Hourly predictions not available:', e);
+    supportsHourly = false;
   }
 
   // Always get high/low predictions
-  const urlHilo = buildUrl({begin, end, product: 'predictions', interval: 'hilo', datum, units});
+  const urlHilo = buildUrl({
+    begin,
+    end,
+    product: 'predictions',
+    interval: 'hilo',
+    datum,
+    units
+  });
   const hiloRes = await fetchJSON(urlHilo);
-  const hilo = hiloRes.predictions || [];
+  const hilo = Array.isArray(hiloRes.predictions) ? hiloRes.predictions : [];
 
   setHiloNote(supportsHourly);
   renderChart(hourly, hilo, units);
@@ -105,12 +118,14 @@ try {
 
 function renderChart(hourly, hilo, units){
   const ctx = document.getElementById('tideChart');
-  const labels = hourly.length ? hourly.map(p => toLocalISO(p.t)) : hilo.map(p => toLocalISO(p.t));
-  const series = hourly.length ? hourly.map(p => Number(p.v)) : hilo.map(p => Number(p.v));
-
-  const hiloPoints = hilo.map(p => ({ x: toLocalISO(p.t), y: Number(p.v), type: p.type }));
-
   const unitLabel = units === 'metric' ? 'm' : 'ft';
+
+  // Line dataset: hourly if available; else plot Hi/Lo values as a line to visualize level changes
+  const labels = (hourly.length ? hourly : hilo).map(p => toLocalDate(p.t));
+  const series = (hourly.length ? hourly : hilo).map(p => Number(p.v));
+
+  // Scatter dataset: explicit Hi/Lo markers
+  const hiloPoints = hilo.map(p => ({ x: toLocalDate(p.t), y: Number(p.v), type: p.type }));
 
   const data = {
     labels,
@@ -129,7 +144,7 @@ function renderChart(hourly, hilo, units){
         label: 'High / Low markers',
         data: hiloPoints,
         borderColor: '#d27a2a',
-        backgroundColor: function(ctx){
+        backgroundColor: (ctx) => {
           const t = ctx.raw.type;
           return t === 'H' ? 'rgba(25,150,25,0.9)' : 'rgba(200,60,60,0.9)';
         },
@@ -146,16 +161,13 @@ function renderChart(hourly, hilo, units){
       legend: { position: 'top' },
       tooltip: {
         callbacks: {
-          label: function(ctx){
-            const val = ctx.parsed.y.toFixed(2);
-            return `${val} ${unitLabel}`;
-          }
+          label: (ctx) => `${ctx.parsed.y.toFixed(2)} ${unitLabel}`
         }
       }
     },
     scales: {
       x: {
-        type: 'time',
+        type: 'time',            // requires date adapter
         time: { unit: 'day' },
         ticks: { maxRotation: 0 },
       },
@@ -175,27 +187,24 @@ function renderTable(hilo, units){
   tbody.innerHTML = '';
   const unitLabel = units === 'metric' ? 'm' : 'ft';
   for (const row of hilo){
-    const tr = document.createElement('tr');
-    const dt = toLocalISO(row.t);
+    const dt = toLocalDate(row.t);
     const dateStr = dt.toLocaleDateString();
     const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const typeStr = row.type === 'H' ? 'High' : 'Low';
     const h = Number(row.v).toFixed(2);
+    const tr = document.createElement('tr');
     tr.innerHTML = `<td>${dateStr}</td><td>${timeStr}</td><td>${typeStr}</td><td>${h} ${unitLabel}</td>`;
     tbody.appendChild(tr);
   }
 }
 
-refreshBtn.addEventListener('click', loadData);
-
-
 // --- 7-Day Weather Forecast (NWS) ---
-// Sandy Point approximate coords from NOAA station metadata: 48.035 N, -122.377 W
-const WX_LAT = 48.035; // 48° 2.1' N ≈ 48.035
-const WX_LON = -122.377; // 122° 22.6' W ≈ -122.377
+const WX_LAT = 48.035;   // Sandy Point approx (48° 2.1' N)
+const WX_LON = -122.377; // (122° 22.6' W)
 
 async function loadWeather(){
   const grid = document.getElementById('wxGrid');
+  if (!grid) return;
   grid.innerHTML = '<div>Loading forecast…</div>';
   try{
     const pointsResp = await fetch(`https://api.weather.gov/points/${WX_LAT},${WX_LON}`);
@@ -203,11 +212,9 @@ async function loadWeather(){
     const points = await pointsResp.json();
     const forecastUrl = points?.properties?.forecast || points?.properties?.forecastGridData;
     if(!forecastUrl) throw new Error('forecast URL missing');
-
     const fcResp = await fetch(forecastUrl);
     if(!fcResp.ok) throw new Error('forecast fetch failed');
     const fc = await fcResp.json();
-
     const periods = fc?.properties?.periods || [];
     const first14 = periods.slice(0, 14); // 7 days (day+night)
     grid.innerHTML = '';
@@ -226,5 +233,12 @@ async function loadWeather(){
     }
   }catch(e){
     grid.innerHTML = `<div role="alert">Weather forecast unavailable (${e.message}).</div>`;
-   }
+  }
 }
+
+// --- Wire up events ---
+refreshBtn?.addEventListener('click', loadData);
+window.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  loadWeather();
+});
