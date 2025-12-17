@@ -186,3 +186,46 @@ function renderTable(hilo, units){
 }
 
 refreshBtn.addEventListener('click', loadData);
+
+
+// --- 7-Day Weather Forecast (NWS) ---
+// Sandy Point approximate coords from NOAA station metadata: 48.035 N, -122.377 W
+const WX_LAT = 48.035; // 48° 2.1' N ≈ 48.035
+const WX_LON = -122.377; // 122° 22.6' W ≈ -122.377
+
+async function loadWeather(){
+  const grid = document.getElementById('wxGrid');
+  grid.innerHTML = '<div>Loading forecast…</div>';
+  try{
+    const pointsResp = await fetch(`https://api.weather.gov/points/${WX_LAT},${WX_LON}`, {
+      headers: { 'User-Agent': 'Jeremy-Whidbey-Tides' }
+    });
+    if(!pointsResp.ok) throw new Error('points lookup failed');
+    const points = await pointsResp.json();
+    const forecastUrl = points?.properties?.forecast || points?.properties?.forecastGridData;
+    if(!forecastUrl) throw new Error('forecast URL missing');
+
+    const fcResp = await fetch(forecastUrl, { headers: { 'User-Agent': 'Jeremy-Whidbey-Tides' }});
+    if(!fcResp.ok) throw new Error('forecast fetch failed');
+    const fc = await fcResp.json();
+
+    const periods = fc?.properties?.periods || [];
+    const first14 = periods.slice(0, 14); // 7 days (day+night)
+    grid.innerHTML = '';
+    for(const p of first14){
+      const card = document.createElement('div');
+      card.className = 'wx-card';
+      const icon = p.icon ? `<img alt="" src="${p.icon}" style="width:36px;height:36px;float:right"/>` : '';
+      card.innerHTML = `
+        <h3>${p.name}</h3>
+        ${icon}
+        <div class="temp">${p.temperature}°${p.temperatureUnit}</div>
+        <div class="detail">${p.shortForecast}</div>
+        <div class="detail">Winds: ${p.windSpeed} ${p.windDirection || ''}</div>
+      `;
+      grid.appendChild(card);
+    }
+  }catch(e){
+    grid.innerHTML = `<div role="alert">Weather forecast unavailable (${e.message}).</div>`;
+   }
+}
