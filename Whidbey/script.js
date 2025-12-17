@@ -232,8 +232,9 @@ async function loadWeather(){
         ${p.icon ? `<img src="${p.icon}" alt="">` : ''}
         <div class="temp">${p.temperature}°${p.temperatureUnit}</div>
         <div class="detail">${p.shortForecast}</div>
-        <div class="detail">Winds: ${p.windSpeed} ${p    <div class="detail">Winds: ${p.windSpeed} ${p.windDirection || ''}</div>
+        <div class="detail">Winds: ${p.windSpeed} ${p.windDirection || ''}</div>
       `;
+
       grid.appendChild(card);
     }
   }catch(e){
