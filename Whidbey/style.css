@@ -15,7 +15,54 @@ footer{ font-size:.9rem; padding:1rem; border-top:1px solid #eee;
 
 /* Weather forecast grid */
 .weather{ padding:1rem; }
-.wx-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; }
-.wx-card{ border:1px solid #eee; border-radius:8px; padding:.75rem; background: #fafafa; }
-.wx-card h3{ margin:.2rem 0 .4rem; font-size:1rem; }
-.wx.wx-card .temp{ font-weight:600; }
+
+/* Collapsible container */
+.collapsible {
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+.collapsible.hidden {
+  max-height: 0;
+  padding: 0;
+}
+.toggle-btn {
+  font-size: 0.9rem;
+  margin-left: 1rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}
+
+/* Weather cards */
+.wx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.wx-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.wx-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+}
+.wx-card .date {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+.wx-card .temp {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+.wx-card img {
+   width: 48px;
+  height: 48px;
+  margin-bottom: 0.5rem;
