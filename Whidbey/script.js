@@ -218,16 +218,21 @@ async function loadWeather(){
     const periods = fc?.properties?.periods || [];
     const first14 = periods.slice(0, 14); // 7 days (day+night)
     grid.innerHTML = '';
-    for(const p of first14){
+    for (const p of first14) {
       const card = document.createElement('div');
       card.className = 'wx-card';
-      const icon = p.icon ? `<img alt="" src="${p.icon}" style="width:36px;height:36px;float:right"/>` : '';
+    
+      const dt = new Date(p.startTime);
+      const weekday = dt.toLocaleDateString(undefined, { weekday: 'short' });
+      const dateStr = dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    
       card.innerHTML = `
         <h3>${p.name}</h3>
-        ${icon}
+        <div class="date">${weekday}, ${dateStr}</div>
+        ${p.icon ? `<img src="${p.icon}" alt="">` : ''}
         <div class="temp">${p.temperature}°${p.temperatureUnit}</div>
         <div class="detail">${p.shortForecast}</div>
-        <div class="detail">Winds: ${p.windSpeed} ${p.windDirection || ''}</div>
+        <div class="detail">Winds: ${p.windSpeed} ${p    <div class="detail">Winds: ${p.windSpeed} ${p.windDirection || ''}</div>
       `;
       grid.appendChild(card);
     }
