@@ -81,15 +81,16 @@ async function loadData(){
   const units = unitsSel.value;
 
   // Try hourly predictions first. Some subordinate stations only support hilo.
-  let hourly = null;
-  let supportsHourly = true;
-  try{
-    const urlHourly = buildUrl({begin, end, product: 'predictions', interval: '60', datum, units});
-    const res = await fetchJSON(urlHourly);
-    hourly = res.predictions || [];
-    if (!hourly.length) supportsHourly = false;
-  }catch(e){
-    supportsHourly = false;
+let hourly = [];
+let supportsHourly = true;
+try {
+  const urlHourly = buildUrl({begin, end, product: 'predictions', interval: '60', datum, units});
+  const res = await fetchJSON(urlHourly);
+  hourly = Array.isArray(res.predictions) ? res  hourly = Array.isArray(res.predictions) ? res.predictions : [];
+  if (!hourly.length) supportsHourly = false;
+} catch (e) {
+  supportsHourly = false;
+
   }
 
   // Always get high/low predictions
