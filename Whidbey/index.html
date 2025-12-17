@@ -38,8 +38,13 @@
     <canvas id="tideChart" aria-label="Tide levels chart" role="img"></canvas>
   </section>
 
-  <section class="table">
-    <h2>High/Low Tides</h2>
+
+<section class="table">
+  <h2>
+    High/Low Tides
+    <button id="toggleTides" class="toggle-btn">Show/Hide</button>
+  </h2>
+  <div id="tideContainer" class="collapsible">
     <p id="hiloNote"></p>
     <table id="hiloTable" aria-label="High and low tide times and heights">
       <thead>
@@ -52,12 +57,13 @@
       </thead>
       <tbody></tbody>
     </table>
-  </section>
-  <br><br><br>
-  
-<section class="weather">
- <p class="wx-note">Source: National Weather Service (Langley/Whidbey area). No API key required.</p>  <h2>7‑Day Weather Forecast (South Whidbey)</h2>
+  </div>
+</section>
+
+<section<section class="weather">
+  <h2>7‑Day Weather Forecast (South Whidbey)</h2>
   <div id="wxGrid" class="wx-grid" aria-live="polite"></div>
+
 </section>
 
   <footer>
