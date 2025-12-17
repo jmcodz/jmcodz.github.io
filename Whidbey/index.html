@@ -1,90 +1,105 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>South Whidbey Island Tides — Last 7 Days & Next 7 Days</title>
-  <meta name="description" content="Interactive tide predictions for Sandy Point (South Whidbey Island), WA — last 7 days and next 7 days." />
+  <title>South Whidbey Island Tides</title>
+  <meta name="description" content="Tide predictions and 7-day weather for South Whidbey Island (Sandy Point, WA)." />
+
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="./style.css" />
 </head>
-<body>
-  <header>
-    <h1>South Whidbey Island Tides</h1>
-    <p class="sub">Sandy Point, Saratoga Passage (NOAA Station <code>9447856</code>)</p>
-  </header>
 
-  <section class="controls">
-    <label>
-      Datum:
+<body>
+<header class="site-header">
+  <h1>South Whidbey Island Tides</h1>
+  <p class="sub">
+    Sandy Point, Saratoga Passage · NOAA Station <code>9447856</code>
+  </p>
+</header>
+
+<main class="container">
+
+  <!-- Controls -->
+  <section class="controls card">
+    <div class="control-group">
+      <label for="datum">Datum</label>
       <select id="datum">
-        <option value="MLLW" selected>MLLW (chart datum)</option>
-        <option value="MSL">MSL</option>
-        <option value="MHHW">MHHW</option>
+        <option value="MLLW" selected>MLLW (Chart Datum)</option>
+        <option value="MSL">Mean Sea Level</option>
+        <option value="MHHW">Mean Higher High Water</option>
       </select>
-    </label>
-    <label>
-      Units:
+    </div>
+
+    <div class="control-group">
+      <label for="units">Units</label>
       <select id="units">
         <option value="english" selected>Feet</option>
         <option value="metric">Meters</option>
       </select>
-    </label>
-    <button id="refresh">Refresh</button>
+    </div>
+
+    <button id="refresh" class="primary">Refresh Data</button>
   </section>
 
-  <section class="chart">
-    <canvas id="tideChart" aria-label="Tide levels chart" role="img"></canvas>
+  <!-- Chart -->
+  <section class="card chart-card">
+    <h2>Tide Levels (Last 7 Days & Next 7 Days)</h2>
+    <div class="chart-wrap">
+      <canvas id="tideChart" aria-label="Tide levels chart" role="img"></canvas>
+    </div>
   </section>
 
+  <!-- Hi/Lo Table -->
+  <section class="card">
+    <div class="section-header">
+      <h2>High / Low Tides</h2>
+      <button id="toggleTides" class="toggle-btn" aria-expanded="true">
+        Hide Table
+      </button>
+    </div>
 
-<section class="table">
-  <h2>
-    High/Low Tides
-    <button id="toggleTides" class="toggle-btn">Show/Hide</button>
-  </h2>
-  <div id="tideContainer" class="collapsible">
-    <p id="hiloNote"></p>
-    <table id="hiloTable" aria-label="High and low tide times and heights">
-      <thead>
-        <tr>
-          <th>Date (Local)</th>
-          <th>Time</th>
-          <th>Type</th>
-          <th>Height</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</section>
+    <div id="tideContainer" class="collapsible">
+      <p id="hiloNote" class="note"></p>
 
-<section<section class="weather">
-  <h2>7‑Day Weather Forecast (South Whidbey)</h2>
-  <div id="wxGrid" class="wx-grid" aria-live="polite"></div>
+      <div class="table-wrap">
+        <table id="hiloTable" aria-label="High and low tide times and heights">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Height</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-</section>
+  <!-- Weather -->
+  <section class="card weather">
+    <h2>7-Day Weather Forecast</h2>
+    <div id="wxGrid" class="wx-grid" aria-live="polite"></div>
+  </section>
 
-  <footer>
-    <p>
-      Data source: NOAA CO-OPS Tides & Currents. Predictions are harmonic and not for navigation.
-      Use caution; actual water levels can vary due to weather and other effects.
-    </p>
-    <p>
-      Station: Sandy Point, Saratoga Passage (South Whidbey). Built by Jeremy’s Copilot.
-    </p>
-  </footer>
+</main>
 
-  
-<!-- Chart.js core -->
+<footer class="site-footer">
+  <p>
+    Data source: NOAA CO-OPS Tides & Currents and NWS Weather.
+    Predictions are harmonic and not for navigation.
+  </p>
+  <p class="fine-print">
+    Built by Jeremy’s Copilot · South Whidbey Island
+  </p>
+</footer>
+
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-<!-- Date adapter for Chart.js 'time' scale -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
-
-<!-- Your app logic -->
 <script src="./script.js"></script>
 
 </body>
-</
+</html>
