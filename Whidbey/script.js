@@ -197,15 +197,13 @@ async function loadWeather(){
   const grid = document.getElementById('wxGrid');
   grid.innerHTML = '<div>Loading forecast…</div>';
   try{
-    const pointsResp = await fetch(`https://api.weather.gov/points/${WX_LAT},${WX_LON}`, {
-      headers: { 'User-Agent': 'Jeremy-Whidbey-Tides' }
-    });
+    const pointsResp = await fetch(`https://api.weather.gov/points/${WX_LAT},${WX_LON}`);
     if(!pointsResp.ok) throw new Error('points lookup failed');
     const points = await pointsResp.json();
     const forecastUrl = points?.properties?.forecast || points?.properties?.forecastGridData;
     if(!forecastUrl) throw new Error('forecast URL missing');
 
-    const fcResp = await fetch(forecastUrl, { headers: { 'User-Agent': 'Jeremy-Whidbey-Tides' }});
+    const fcResp = await fetch(forecastUrl);
     if(!fcResp.ok) throw new Error('forecast fetch failed');
     const fc = await fcResp.json();
 
