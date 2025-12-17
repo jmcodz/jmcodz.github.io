@@ -11,3 +11,11 @@ h1{ margin:0; font-size:1.5rem; }
 #hiloTable{ width:100%; border-collapse: collapse; }
 #hiloTable th, #hiloTable td{ border-bottom:1px solid #eee; padding:.5rem .4rem; text-align:left; }
 footer{ font-size:.9rem; padding:1rem; border-top:1px solid #eee;
+
+
+/* Weather forecast grid */
+.weather{ padding:1rem; }
+.wx-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; }
+.wx-card{ border:1px solid #eee; border-radius:8px; padding:.75rem; background: #fafafa; }
+.wx-card h3{ margin:.2rem 0 .4rem; font-size:1rem; }
+.wx.wx-card .temp{ font-weight:600; }
