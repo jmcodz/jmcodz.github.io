@@ -244,10 +244,11 @@ async function loadWeather(){
 const toggleBtn = document.getElementById('toggleTides');
 const tideContainer = document.getElementById('tideContainer');
 
-toggleBtn.addEventListener('click', () => {
-  tideContainer.classList.toggle('hidden');
+toggleBtn?.addEventListener('click', () => {
+  const isHidden = tideContainer.classList.toggle('hidden');
+  toggleBtn.textContent = isHidden ? 'Show Table' : 'Hide Table';
+  toggleBtn.setAttribute('aria-expanded', String(!isHidden));
 });
-
 
 // --- Wire up events ---
 refreshBtn?.addEventListener('click', loadData);
