@@ -1,9 +1,8 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Gymnastics Meet Scoring</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />  <meta charset="utf-8" />
   <style>
     :root{
       --bg:#0f172a; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af;
@@ -244,13 +243,23 @@
 
     // --- Helpers ---
     const el = sel => document.querySelector(sel);
-    function fmt(n){ if(n===null || n===undefined || Number.isNaN(n)) return '—'; return Number(n).toFixed(3).replace(/\.?0+$/,''); }
+
+    // Show up to 3 decimal places (trim trailing zeros). Change to .toFixed(3) if you want fixed-width.
+    function fmt(n){
+      if(n===null || n===undefined || Number.isNaN(n)) return '—';
+      return Number(n).toFixed(3).replace(/\.?0+$/,'');
+    }
+
+    // Allow 3-decimal precision and clamp to 0..20
     function clampScore(v){
       if(v==='' || v===null) return null;
       const n = Number(v);
       if(Number.isNaN(n)) return null;
-      return Math.max(0, Math.min(20, n)); // adjust max if needed
+      // Round to 3 decimals to normalize inputs like 9.8751
+      const rounded = Math.round(n * 1000) / 1000;
+      return Math.max(0, Math.min(20, rounded)); // adjust max if needed
     }
+
     function teamCountK(){
       switch(state.teamRule){
         case 'sum-all': return null; // all
@@ -400,10 +409,17 @@
         (state.roster[tIdx]||[]).forEach(a=>{
           const tr = document.createElement('tr');
           const tdName = document.createElement('td'); tdName.textContent = a.name; tr.appendChild(tdName);
+
           const cells = [0,1,2,3].map(i=>{
             const td = document.createElement('td'); td.className='num';
-            const input = document.createElement('input'); input.type='number'; input.step='0.05'; input.min='0'; input.max='20';
-            input.placeholder='—'; input.style.width='100%';
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.001';        // ← allow 3-decimal inputs
+            input.inputMode = 'decimal'; // ← friendlier mobile keyboard
+            input.min = '0';
+            input.max = '20';
+            input.placeholder = '—';
+            input.style.width = '100%';
             input.value = state.scores[a.id]?.[i] ?? '';
             input.addEventListener('input', e=>{
               const v = clampScore(e.target.value);
@@ -411,7 +427,8 @@
               state.scores[a.id][i] = v;
               saveState();
             });
-            td.appendChild(input); return td;
+            td.appendChild(input);
+            return td;
           });
           cells.forEach(td=> tr.appendChild(td));
 
@@ -477,8 +494,6 @@
     function renderTeams(){
       const body = el('#teamBody'); body.innerHTML='';
       const k = teamCountK();
-      const [d1,d2,d3,d4] = state.disciplines;
-
       const rows = state.teams.map((team, tIdx)=>{
         const athletes = (state.roster[tIdx]||[]).map(a=> state.scores[a.id] || [null,null,null,null]);
         const col = i => athletes.map(s=> s[i]).filter(x=> x!==null);
@@ -520,7 +535,6 @@
       reader.onload = e=>{
         try{
           const data = JSON.parse(e.target.result);
-          // minimal shape validation
           if(!Array.isArray(data.disciplines) || data.disciplines.length!==4) throw new Error('Invalid JSON: disciplines');
           state = Object.assign(structuredClone(DEFAULT_STATE), data);
           saveState();
@@ -552,3 +566,4 @@
   </script>
 </body>
 </html>
+  <title>Gymnastics Meet Scoring</title>
