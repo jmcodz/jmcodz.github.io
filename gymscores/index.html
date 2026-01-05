@@ -1,0 +1,555 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Gymnastics Meet Scoring</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af;
+      --accent:#22c55e; --danger:#ef4444; --border:#374151; --card:#1f2937;
+      --focus:#38bdf8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: linear-gradient(180deg, #0b1220, var(--bg));
+      color: var(--text);
+    }
+    header{
+      padding:16px; border-bottom:1px solid var(--border); background:rgba(31,41,55,0.7);
+      position: sticky; top:0; backdrop-filter: blur(6px); z-index:10;
+    }
+    h1{ margin:0 0 4px; font-size:1.25rem; }
+    .sub{ color:var(--muted); font-size:0.9rem; }
+    main{ max-width:1200px; margin:0 auto; padding:16px; }
+
+    .grid{ display:grid; gap:16px; }
+    .grid.cols-2{ grid-template-columns: 1fr 1fr; }
+    .grid.cols-3{ grid-template-columns: 1fr 1fr 1fr; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+    .card h2{ margin-top:0; font-size:1.05rem; }
+    label{ display:block; font-size:0.85rem; color:var(--muted); margin-bottom:6px; }
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%; padding:10px; border-radius:8px; border:1px solid var(--border);
+      background:#0b1324; color:var(--text);
+    }
+    input[type="number"]{ text-align:right; }
+    .row{ display:flex; gap:8px; align-items:center; }
+    .row > *{ flex:1; }
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px;
+      border:1px solid var(--border); color:var(--text); background:#0b1324; cursor:pointer;
+    }
+    .btn:hover{ border-color:#42526b; }
+    .btn.primary{ background:linear-gradient(180deg,#0891b2,#0284c7); border-color:#0369a1; }
+    .btn.success{ background:linear-gradient(180deg,#16a34a,#22c55e); border-color:#15803d; }
+    .btn.danger{ background:linear-gradient(180deg,#b91c1c,#ef4444); border-color:#7f1d1d; }
+    .btn.ghost{ background:transparent; border-color:transparent; color:var(--muted); }
+    .pill{ padding:4px 10px; border:1px solid var(--border); border-radius:999px; font-size:0.8rem; color:var(--muted); }
+
+    table{ width:100%; border-collapse: collapse; }
+    th, td{ border-bottom:1px solid var(--border); padding:8px; font-size:0.9rem; }
+    th{ text-align:left; color:#cbd5e1; position:sticky; top:48px; background:var(--card); }
+    tbody tr:hover{ background:#0f1a31; }
+    .num{ text-align:right; font-variant-numeric: tabular-nums; }
+    .mini{ font-size:0.8rem; color:var(--muted); }
+
+    .toolbar{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+    .spacer{ flex:1; }
+    .tag{ display:inline-flex; align-items:center; gap:6px; background:#0b1324; border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:0.8rem; color:#e2e8f0;}
+    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; background:#0b1324; border:1px solid var(--border); border-radius:6px; padding:2px 6px; }
+
+    .flex{ display:flex; gap:16px; align-items:flex-start; }
+    .flex > .card{ flex:1; }
+
+    @media (max-width:900px){
+      .grid.cols-2{ grid-template-columns: 1fr; }
+      .grid.cols-3{ grid-template-columns: 1fr; }
+      th{ top:88px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Gymnastics Meet Scoring</h1>
+    <div class="sub">Enter scores per discipline for each athlete; totals update automatically. Data is saved in your browser.</div>
+  </header>
+  <main>
+    <!-- CONFIG / SETUP -->
+    <div class="grid cols-3">
+      <section class="card" id="meetSetup">
+        <h2>Meet Setup</h2>
+        <label>Meet name</label>
+        <input type="text" id="meetName" placeholder="e.g., Sumner Invitational" />
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>Disciplines (4)</label>
+            <input type="text" id="disc1" placeholder="Vault" />
+          </div>
+          <div><input type="text" id="disc2" placeholder="Bars" /></div>
+        </div>
+        <div class="row">
+          <div><input type="text" id="disc3" placeholder="Beam" /></div>
+          <div><input type="text" id="disc4" placeholder="Floor" /></div>
+        </div>
+
+        <label style="margin-top:10px;">Team scoring rule (per discipline)</label>
+        <div class="row">
+          <select id="teamRule">
+            <option value="sum-all">Sum of all entered athlete scores</option>
+            <option value="top-3">Top 3 scores count</option>
+            <option value="top-4">Top 4 scores count</option>
+            <option value="custom">Custom K scores count</option>
+          </select>
+          <input type="number" id="customK" placeholder="K" min="1" max="12" style="display:none;" />
+        </div>
+
+        <div style="margin-top:10px;">
+          <label>Teams (4)</label>
+          <input type="text" id="team1" placeholder="Team A" />
+          <input type="text" id="team2" placeholder="Team B" style="margin-top:6px;" />
+          <input type="text" id="team3" placeholder="Team C" style="margin-top:6px;" />
+          <input type="text" id="team4" placeholder="Team D" style="margin-top:6px;" />
+        </div>
+
+        <div class="toolbar" style="margin-top:12px;">
+          <button class="btn primary" id="applySetup">Apply Setup</button>
+          <button class="btn ghost" id="resetSetup">Reset</button>
+        </div>
+        <div class="mini" id="setupStatus" style="margin-top:6px;"></div>
+      </section>
+
+      <section class="card" id="manageRoster">
+        <h2>Rosters</h2>
+        <div class="row">
+          <select id="rosterTeam"></select>
+          <input type="text" id="athleteName" placeholder="Add athlete name…" />
+        </div>
+        <div class="toolbar" style="margin-top:8px;">
+          <button class="btn success" id="addAthlete">Add Athlete</button>
+          <button class="btn ghost" id="clearRoster">Clear Selected Team</button>
+        </div>
+
+        <div id="rosterList" style="margin-top:12px;">
+          <!-- team roster lists will appear here -->
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Data & Utilities</h2>
+        <div class="toolbar">
+          <button class="btn" id="exportJson">Export JSON</button>
+          <input type="file" id="importFile" accept="application/json" style="display:none;">
+          <button class="btn" id="importJson">Import JSON</button>
+          <button class="btn danger" id="clearAll">Clear All</button>
+          <button class="btn" id="printView">Print</button>
+        </div>
+        <p class="mini" style="margin-top:8px;">
+          Tip: Export a snapshot at the end of each rotation. You can also share a read-only link by
+          copying the exported JSON into a gist and loading it via Import.
+        </p>
+      </section>
+    </div>
+
+    <!-- ENTRY TABLES -->
+    <section class="card" style="margin-top:16px;">
+      <div class="row" style="align-items:center;">
+        <h2 style="flex:1;">Score Entry</h2>
+        <span class="pill" id="meetNameDisplay">Meet: —</span>
+        <span class="pill" id="disciplinesDisplay">Disciplines: —</span>
+        <span class="pill" id="ruleDisplay">Rule: Sum of all</span>
+      </div>
+
+      <div id="entryTables" style="margin-top:8px;">
+        <!-- one table per team -->
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <div class="flex" style="margin-top:16px;">
+      <section class="card" id="individualResults">
+        <h2>Individual Results (All‑Around)</h2>
+        <div class="toolbar">
+          <div class="spacer"></div>
+          <button class="btn" data-sort="name">Sort by Name</button>
+          <button class="btn" data-sort="team">Sort by Team</button>
+          <button class="btn" data-sort="total">Sort by Total</button>
+        </div>
+        <table style="margin-top:8px;">
+          <thead>
+            <tr>
+              <th>Athlete</th>
+              <th>Team</th>
+              <th class="num" id="thD1">D1</th>
+              <th class="num" id="thD2">D2</th>
+              <th class="num" id="thD3">D3</th>
+              <th class="num" id="thD4">D4</th>
+              <th class="num">All‑Around</th>
+            </tr>
+          </thead>
+          <tbody id="individualBody"></tbody>
+        </table>
+      </section>
+
+      <section class="card" id="teamResults">
+        <h2>Team Results</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th class="num" id="thTD1">D1</th>
+              <th class="num" id="thTD2">D2</th>
+              <th class="num" id="thTD3">D3</th>
+              <th class="num" id="thTD4">D4</th>
+              <th class="num">Grand Total</th>
+            </tr>
+          </thead>
+          <tbody id="teamBody"></tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // --- State ---
+    const DEFAULT_STATE = {
+      meetName: '',
+      disciplines: ['Vault','Bars','Beam','Floor'],
+      teamRule: 'sum-all', // 'sum-all' | 'top-3' | 'top-4' | 'custom'
+      customK: 3,
+      teams: ['Team A','Team B','Team C','Team D'],
+      roster: { 0:[], 1:[], 2:[], 3:[] }, // per team index
+      scores: {} // key: athleteId -> [d1,d2,d3,d4]
+    };
+    let state = loadState();
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem('gym_meet_v1');
+        if(!raw) return structuredClone(DEFAULT_STATE);
+        const parsed = JSON.parse(raw);
+        return Object.assign(structuredClone(DEFAULT_STATE), parsed);
+      }catch(e){ return structuredClone(DEFAULT_STATE); }
+    }
+    function saveState(){
+      localStorage.setItem('gym_meet_v1', JSON.stringify(state));
+      renderAll();
+    }
+    function resetAll(){
+      state = structuredClone(DEFAULT_STATE);
+      saveState();
+    }
+
+    // --- Helpers ---
+    const el = sel => document.querySelector(sel);
+    function fmt(n){ if(n===null || n===undefined || Number.isNaN(n)) return '—'; return Number(n).toFixed(3).replace(/\.?0+$/,''); }
+    function clampScore(v){
+      if(v==='' || v===null) return null;
+      const n = Number(v);
+      if(Number.isNaN(n)) return null;
+      return Math.max(0, Math.min(20, n)); // adjust max if needed
+    }
+    function teamCountK(){
+      switch(state.teamRule){
+        case 'sum-all': return null; // all
+        case 'top-3': return 3;
+        case 'top-4': return 4;
+        case 'custom': return Math.max(1, Math.min(12, Number(state.customK) || 1));
+      }
+    }
+    function sumTopK(arr, k){
+      const nums = arr.filter(x=>x!==null).sort((a,b)=>b-a);
+      if(k===null) return nums.reduce((s,x)=>s+x,0);
+      return nums.slice(0,k).reduce((s,x)=>s+x,0);
+    }
+
+    // --- Setup UI wiring ---
+    function initSetup(){
+      el('#meetName').value = state.meetName;
+      const [d1,d2,d3,d4] = state.disciplines;
+      el('#disc1').value = d1; el('#disc2').value = d2; el('#disc3').value = d3; el('#disc4').value = d4;
+      el('#teamRule').value = state.teamRule;
+      el('#customK').style.display = state.teamRule==='custom' ? 'block':'none';
+      el('#customK').value = state.customK;
+      el('#team1').value = state.teams[0]||''; el('#team2').value = state.teams[1]||'';
+      el('#team3').value = state.teams[2]||''; el('#team4').value = state.teams[3]||'';
+
+      el('#teamRule').addEventListener('change', e=>{
+        state.teamRule = e.target.value;
+        el('#customK').style.display = state.teamRule==='custom' ? 'block':'none';
+      });
+      el('#applySetup').addEventListener('click', ()=>{
+        state.meetName = el('#meetName').value.trim();
+        state.disciplines = [el('#disc1').value||'D1', el('#disc2').value||'D2', el('#disc3').value||'D3', el('#disc4').value||'D4'];
+        state.teamRule = el('#teamRule').value;
+        state.customK = Number(el('#customK').value)||state.customK;
+        state.teams = [el('#team1').value||'Team 1', el('#team2').value||'Team 2', el('#team3').value||'Team 3', el('#team4').value||'Team 4'];
+        el('#setupStatus').textContent = 'Setup applied.';
+        saveState();
+        initRosterSelectors();
+      });
+      el('#resetSetup').addEventListener('click', ()=>{
+        state.meetName=''; state.disciplines=['Vault','Bars','Beam','Floor'];
+        state.teamRule='sum-all'; state.customK=3;
+        state.teams=['Team A','Team B','Team C','Team D'];
+        el('#setupStatus').textContent = 'Setup reset (defaults).';
+        saveState(); initSetup(); initRosterSelectors();
+      });
+    }
+
+    function initRosterSelectors(){
+      const sel = el('#rosterTeam');
+      sel.innerHTML = '';
+      state.teams.forEach((t,i)=>{
+        const opt = document.createElement('option'); opt.value = i; opt.textContent = t; sel.appendChild(opt);
+      });
+      el('#addAthlete').onclick = ()=>{
+        const name = el('#athleteName').value.trim();
+        const teamIdx = Number(el('#rosterTeam').value);
+        if(!name) return;
+        const id = crypto.randomUUID();
+        state.roster[teamIdx] = state.roster[teamIdx]||[];
+        state.roster[teamIdx].push({ id, name });
+        state.scores[id] = [null,null,null,null];
+        el('#athleteName').value = '';
+        saveState();
+      };
+      el('#clearRoster').onclick = ()=>{
+        const teamIdx = Number(el('#rosterTeam').value);
+        (state.roster[teamIdx]||[]).forEach(a=> delete state.scores[a.id]);
+        state.roster[teamIdx] = [];
+        saveState();
+      };
+      renderRosters();
+    }
+
+    // --- Rendering ---
+    function renderAll(){
+      // header badges
+      el('#meetNameDisplay').textContent = `Meet: ${state.meetName||'—'}`;
+      el('#disciplinesDisplay').textContent = `Disciplines: ${state.disciplines.join(', ')}`;
+      const ruleMap = {
+        'sum-all':'Sum of all',
+        'top-3':'Top 3 count',
+        'top-4':'Top 4 count',
+        'custom':`Top ${teamCountK()} count`
+      };
+      el('#ruleDisplay').textContent = `Rule: ${ruleMap[state.teamRule]}`;
+
+      renderEntryTables();
+      renderIndividuals();
+      renderTeams();
+
+      // update column headers
+      const [d1,d2,d3,d4] = state.disciplines;
+      el('#thD1').textContent = d1; el('#thD2').textContent = d2; el('#thD3').textContent = d3; el('#thD4').textContent = d4;
+      el('#thTD1').textContent = d1; el('#thTD2').textContent = d2; el('#thTD3').textContent = d3; el('#thTD4').textContent = d4;
+    }
+
+    function renderRosters(){
+      const host = el('#rosterList');
+      host.innerHTML = '';
+      state.teams.forEach((team, idx)=>{
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<h3 style="margin:0 0 8px;">${team}</h3>`;
+        const ul = document.createElement('ul');
+        ul.style.listStyle='none'; ul.style.padding=0; ul.style.margin=0;
+        (state.roster[idx]||[]).forEach(a=>{
+          const li = document.createElement('li');
+          li.style.display='flex'; li.style.justifyContent='space-between'; li.style.alignItems='center'; li.style.padding='6px 0';
+          li.innerHTML = `<span>${a.name}</span>`;
+          const del = document.createElement('button'); del.className='btn danger'; del.textContent='Remove';
+          del.onclick = ()=>{
+            state.roster[idx] = (state.roster[idx]||[]).filter(x=>x.id!==a.id);
+            delete state.scores[a.id];
+            saveState();
+          };
+          li.appendChild(del);
+          ul.appendChild(li);
+        });
+        card.appendChild(ul);
+        host.appendChild(card);
+      });
+    }
+
+    function renderEntryTables(){
+      const host = el('#entryTables');
+      host.innerHTML = '';
+      state.teams.forEach((team, tIdx)=>{
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<h3 style="margin:0 0 8px;">${team}</h3>`;
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const [d1,d2,d3,d4] = state.disciplines;
+        thead.innerHTML = `
+          <tr>
+            <th>Athlete</th>
+            <th class="num">${d1}</th>
+            <th class="num">${d2}</th>
+            <th class="num">${d3}</th>
+            <th class="num">${d4}</th>
+            <th class="num">All‑Around</th>
+          </tr>`;
+        table.appendChild(thead);
+        const tbody = document.createElement('tbody');
+
+        (state.roster[tIdx]||[]).forEach(a=>{
+          const tr = document.createElement('tr');
+          const tdName = document.createElement('td'); tdName.textContent = a.name; tr.appendChild(tdName);
+          const cells = [0,1,2,3].map(i=>{
+            const td = document.createElement('td'); td.className='num';
+            const input = document.createElement('input'); input.type='number'; input.step='0.05'; input.min='0'; input.max='20';
+            input.placeholder='—'; input.style.width='100%';
+            input.value = state.scores[a.id]?.[i] ?? '';
+            input.addEventListener('input', e=>{
+              const v = clampScore(e.target.value);
+              if(!state.scores[a.id]) state.scores[a.id]=[null,null,null,null];
+              state.scores[a.id][i] = v;
+              saveState();
+            });
+            td.appendChild(input); return td;
+          });
+          cells.forEach(td=> tr.appendChild(td));
+
+          const tdTotal = document.createElement('td'); tdTotal.className='num';
+          const total = (state.scores[a.id]||[]).reduce((s,x)=> s + (x??0),0);
+          tdTotal.textContent = fmt(total);
+          tr.appendChild(tdTotal);
+
+          tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+        card.appendChild(table);
+        host.appendChild(card);
+      });
+    }
+
+    // --- Results ---
+    function gatherAllAthletes(){
+      const all = [];
+      state.teams.forEach((team, tIdx)=>{
+        (state.roster[tIdx]||[]).forEach(a=>{
+          all.push({
+            id:a.id, name:a.name, team, scores: state.scores[a.id] || [null,null,null,null]
+          });
+        });
+      });
+      return all;
+    }
+
+    function renderIndividuals(sortBy='name'){
+      const body = el('#individualBody'); body.innerHTML='';
+      const rows = gatherAllAthletes().map(a=>{
+        const total = (a.scores||[]).reduce((s,x)=> s + (x??0),0);
+        return { name:a.name, team:a.team, s:a.scores, total };
+      });
+      const cmp = {
+        name:(a,b)=> a.name.localeCompare(b.name),
+        team:(a,b)=> a.team.localeCompare(b.team) || a.name.localeCompare(b.name),
+        total:(a,b)=> b.total - a.total || a.name.localeCompare(b.name)
+      }[sortBy];
+      rows.sort(cmp);
+
+      rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.name}</td>
+          <td>${r.team}</td>
+          <td class="num">${fmt(r.s[0])}</td>
+          <td class="num">${fmt(r.s[1])}</td>
+          <td class="num">${fmt(r.s[2])}</td>
+          <td class="num">${fmt(r.s[3])}</td>
+          <td class="num"><strong>${fmt(r.total)}</strong></td>`;
+        body.appendChild(tr);
+      });
+
+      // sort buttons
+      el('#individualResults').querySelectorAll('button[data-sort]').forEach(btn=>{
+        btn.onclick = ()=> renderIndividuals(btn.getAttribute('data-sort'));
+      });
+    }
+
+    function renderTeams(){
+      const body = el('#teamBody'); body.innerHTML='';
+      const k = teamCountK();
+      const [d1,d2,d3,d4] = state.disciplines;
+
+      const rows = state.teams.map((team, tIdx)=>{
+        const athletes = (state.roster[tIdx]||[]).map(a=> state.scores[a.id] || [null,null,null,null]);
+        const col = i => athletes.map(s=> s[i]).filter(x=> x!==null);
+        const tD1 = sumTopK(col(0), k);
+        const tD2 = sumTopK(col(1), k);
+        const tD3 = sumTopK(col(2), k);
+        const tD4 = sumTopK(col(3), k);
+        const tGrand = [tD1,tD2,tD3,tD4].reduce((s,x)=> s+(x||0),0);
+        return { team, tD1, tD2, tD3, tD4, tGrand };
+      });
+
+      rows.sort((a,b)=> b.tGrand - a.tGrand);
+
+      rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.team}</td>
+          <td class="num">${fmt(r.tD1)}</td>
+          <td class="num">${fmt(r.tD2)}</td>
+          <td class="num">${fmt(r.tD3)}</td>
+          <td class="num">${fmt(r.tD4)}</td>
+          <td class="num"><strong>${fmt(r.tGrand)}</strong></td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    // --- Import / Export / Print ---
+    function exportJson(){
+      const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const safeName = (state.meetName || 'meet').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+      a.download = `${safeName}_scores.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    function importJsonFile(file){
+      const reader = new FileReader();
+      reader.onload = e=>{
+        try{
+          const data = JSON.parse(e.target.result);
+          // minimal shape validation
+          if(!Array.isArray(data.disciplines) || data.disciplines.length!==4) throw new Error('Invalid JSON: disciplines');
+          state = Object.assign(structuredClone(DEFAULT_STATE), data);
+          saveState();
+        }catch(err){
+          alert('Import failed: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function initDataUtils(){
+      el('#exportJson').onclick = exportJson;
+      el('#importJson').onclick = ()=> el('#importFile').click();
+      el('#importFile').addEventListener('change', e=>{
+        if(e.target.files?.[0]) importJsonFile(e.target.files[0]);
+        e.target.value='';
+      });
+      el('#clearAll').onclick = ()=>{
+        if(confirm('Clear all data for this meet?')) resetAll();
+      };
+      el('#printView').onclick = ()=> window.print();
+    }
+
+    // --- Boot ---
+    initSetup();
+    initRosterSelectors();
+    initDataUtils();
+    renderAll();
+  </script>
+</body>
+</html>
