@@ -1,1 +1,47 @@
-<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="11468827185" data-style="standard" data-from-embed="false"></div><script src="https://strava-embeds.com/embed.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Strava Full Page Embed</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    .strava-container {
+      width: 100%;
+      height: 100vh;
+    }
+
+    .strava-container iframe {
+      width: 100% !important;
+      height: 100% !important;
+      border: none;
+    }
+
+    /* fallback targeting in case iframe styles are overridden */
+    iframe[src*="strava"] {
+      width: 100% !important;
+      height: 100vh !important;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="strava-container">
+    <div class="strava-embed-placeholder"
+         data-embed-type="activity"
+         data-embed-id="11468827185"
+         data-style="standard"
+         data-from-embed="false">
+    </div>
+  </div>
+
+  <script src="https://strava-embeds.com/embed.js"></script>
+
+</body>
+</html>
