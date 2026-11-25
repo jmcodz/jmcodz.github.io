@@ -188,18 +188,55 @@ function renderChart(hourly, hilo, units){
   chart = new Chart(ctx, { type: 'line', data, options });
 }
 
-function renderTable(hilo, units){
+function renderTable(hilo, units) {
   const tbody = document.querySelector('#hiloTable tbody');
   tbody.innerHTML = '';
+
   const unitLabel = units === 'metric' ? 'm' : 'ft';
-  for (const row of hilo){
-    const dt = toLocalDate(row.t);
-    const dateStr = dt.toLocaleDateString();
-    const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(today);
+  start.setDate(start.getDate() - 7);
+
+  const end = new Date(today);
+  end.setDate(end.getDate() + 8); // exclusive upper boundary
+
+  const rows = hilo
+    .map(row => ({
+      ...row,
+      date: toLocalDate(row.t)
+    }))
+    .filter(row => row.date >= start && row.date < end)
+    .sort((a, b) => a.date - b.date);
+
+  for (const row of rows) {
+    const dt = row.date;
+
+    const dateStr = dt.toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+
+    const timeStr = dt.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+
     const typeStr = row.type === 'H' ? 'High' : 'Low';
     const h = Number(row.v).toFixed(2);
+
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${dateStr}</td><td>${timeStr}</td><td>${typeStr}</td><td>${h} ${unitLabel}</td>`;
+
+    tr.innerHTML = `
+      <td>${dateStr}</td>
+      <td>${timeStr}</td>
+      <td>${typeStr}</td>
+      <td>${h} ${unitLabel}</td>
+    `;
+
     tbody.appendChild(tr);
   }
 }
