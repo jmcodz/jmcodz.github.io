@@ -52,13 +52,20 @@ async function fetchJSON(url){
   return data;
 }
 
-function last7Next7(){
-  const now = new Date();
-  const begin = new Date(now);
-  begin.setDate(now.getDate() - 7);
-  const end = new Date(now);
-  end.setDate(now.getDate() + 7);
-  return {begin, end};
+function last7Next7() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const begin = new Date(today);
+  begin.setDate(begin.getDate() - 7);
+
+  const end = new Date(today);
+  end.setDate(end.getDate() + 7);
+
+  // Include the entire final day
+  end.setHours(23, 59, 59, 999);
+
+  return { begin, end };
 }
 
 function toLocalDate(s){
