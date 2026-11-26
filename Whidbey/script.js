@@ -158,6 +158,12 @@ for (const p of [...pastHilo, ...futureHilo]) {
 const hilo = Array.from(hiloMap.values())
   .sort((a, b) => toLocalDate(a.t) - toLocalDate(b.t));
 
+console.log('Past tides:', pastHilo.length);
+console.log('Future tides:', futureHilo.length);
+console.log('Combined tides:', hilo.length);
+console.log('First:', hilo[0]?.t);
+console.log('Last:', hilo[hilo.length - 1]?.t);
+
   setHiloNote(supportsHourly);
   renderChart(hourly, hilo, units);
   renderTable(hilo, units);
