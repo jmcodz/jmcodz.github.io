@@ -105,17 +105,58 @@ async function loadData(){
     supportsHourly = false;
   }
 
-  // Always get high/low predictions
-  const urlHilo = buildUrl({
-    begin,
-    end,
-    product: 'predictions',
-    interval: 'hilo',
-    datum,
-    units
-  });
-  const hiloRes = await fetchJSON(urlHilo);
-  const hilo = Array.isArray(hiloRes.predictions) ? hiloRes.predictions : [];
+// Get high/low predictions in two ranges:
+// previous 7 days -> today
+// today -> next 7 days
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const pastBegin = new Date(today);
+pastBegin.setDate(pastBegin.getDate() - 7);
+
+const futureEnd = new Date(today);
+futureEnd.setDate(futureEnd.getDate() + 7);
+
+const pastUrl = buildUrl({
+  begin: pastBegin,
+  end: today,
+  product: 'predictions',
+  interval: 'hilo',
+  datum,
+  units
+});
+
+const futureUrl = buildUrl({
+  begin: today,
+  end: futureEnd,
+  product: 'predictions',
+  interval: 'hilo',
+  datum,
+  units
+});
+
+const [pastRes, futureRes] = await Promise.all([
+  fetchJSON(pastUrl),
+  fetchJSON(futureUrl)
+]);
+
+const pastHilo = Array.isArray(pastRes.predictions)
+  ? pastRes.predictions
+  : [];
+
+const futureHilo = Array.isArray(futureRes.predictions)
+  ? futureRes.predictions
+  : [];
+
+// Combine and remove duplicate predictions for today
+const hiloMap = new Map();
+
+for (const p of [...pastHilo, ...futureHilo]) {
+  hiloMap.set(`${p.t}-${p.type}`, p);
+}
+
+const hilo = Array.from(hiloMap.values())
+  .sort((a, b) => toLocalDate(a.t) - toLocalDate(b.t));
 
   setHiloNote(supportsHourly);
   renderChart(hourly, hilo, units);
