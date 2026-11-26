@@ -18,13 +18,12 @@ footer{ font-size:.9rem; padding:1rem; border-top:1px solid #eee; }
 
 /* Collapsible container */
 .collapsible {
-  max-height: 1000px;
-  overflow: hidden;
-  transition: max-height 0.4s ease;
+  max-height: none;
+  overflow: visible;
 }
+
 .collapsible.hidden {
-  max-height: 0;
-  padding: 0;
+  display: none;
 }
 .toggle-btn {
   font-size: 0.9rem;
